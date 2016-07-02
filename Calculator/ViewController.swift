@@ -25,6 +25,9 @@ class ViewController: UIViewController {
             me.display.textColor = UIColor.redColor()
             return sqrt($0)
         }
+        
+        
+        adjustButtonLayout(view, portrait: traitCollection.horizontalSizeClass == .Compact && traitCollection.verticalSizeClass == .Regular)
     }
     
     deinit {
@@ -33,10 +36,12 @@ class ViewController: UIViewController {
     }
     
     @IBAction private func touchDigit(sender: UIButton) {
-        let digit = sender.currentTitle!
+        var digit = sender.currentTitle!
         if userIsInTheMiddleOfTyping {
             let textCurrentlyInDisplay = display.text!
             display.text = textCurrentlyInDisplay + digit
+        } else if digit == "." {
+            digit = "0."
         } else {
             display.text = digit
         }
@@ -46,8 +51,7 @@ class ViewController: UIViewController {
     //Computed properties don’t actually store a value. They  provide a getter and an optional setter to retrieve(get { }) and set other properties and values indirectly(set { }).
     private var displayValue: Double {
         get {
-            return Double(display.text!)!
-            // If Double("Hello")
+            return Double(display.text!)! // If Double("Hello")
         }
         set {
             display.text = String(newValue)
@@ -80,6 +84,77 @@ class ViewController: UIViewController {
         displayValue = brain.result
     }
     
+    private let defaultDisplayText = "0"
+    
+    @IBAction func clearEverything(sender: UIButton) {
+        brain = CalculatorBrain()
+        savedProgram = nil
+        display.text = defaultDisplayText
+    }
+    
+    @IBAction func backSpace(sender: UIButton) {
+        
+//        if display.text!.characters.count > 1 {
+//            display.text = String(display.text!.characters.dropLast())
+//        } else {
+//            userIsInTheMiddleOfTyping = false
+//            display.text = defaultDisplayText
+//        }
+        if userIsInTheMiddleOfTyping {
+            if var text = display.text {
+                text.removeAtIndex(text.endIndex.predecessor())
+                if text.isEmpty {
+                    text = defaultDisplayText
+                    userIsInTheMiddleOfTyping = false
+                }
+                display.text = text
+            }
+        }
+        
+    }
+    
+    private let decimalSeparator = NSNumberFormatter().decimalSeparator!
+    
+    private func adjustButtonLayout(view: UIView, portrait: Bool) {
+        for subview in view.subviews {
+            if subview.tag == 1 {
+                subview.hidden = portrait
+            } else if subview.tag == 2 {
+                subview.hidden = !portrait
+            }
+            if let button = subview as? UIButton {
+                button.setBackgroundColor(UIColor.blackColor(), forState: .Highlighted)
+                if button.tag == 3 {
+                    button.setTitle(decimalSeparator, forState: .Normal)
+                }
+            } else if let stack = subview as? UIStackView {
+                adjustButtonLayout(stack, portrait: portrait);
+            }
+        }
+    }
+
+    
+    override func willTransitionToTraitCollection(newCollection: UITraitCollection, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
+        super.willTransitionToTraitCollection(newCollection, withTransitionCoordinator: coordinator)
+        adjustButtonLayout(view, portrait: newCollection.horizontalSizeClass == .Compact && newCollection.verticalSizeClass == .Regular)
+    }
+
+}
+
+extension UIButton {
+    
+    func setBackgroundColor(color: UIColor, forState state: UIControlState) {
+        
+        let rect = CGRectMake(0.0, 0.0, 1.0, 1.0)
+        UIGraphicsBeginImageContextWithOptions(rect.size, false, 0)
+        let context = UIGraphicsGetCurrentContext()
+        color.setFill()
+        CGContextFillRect(context, rect)
+        
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        setBackgroundImage(image, forState: state)
+    }
 }
 
 /* 

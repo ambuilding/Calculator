@@ -30,12 +30,15 @@ class CalculatorBrain {
     "π" : Operation.Constant(M_PI),
     "e" : Operation.Constant(M_E),
     "±" : Operation.UnaryOperation({ -$0 }),
+    "%" : Operation.UnaryOperation({ $0 / 100 }),
     "√" : Operation.UnaryOperation(sqrt),
     "cos" : Operation.UnaryOperation(cos),
+    "sin" : Operation.UnaryOperation(sin),
     "×" : Operation.BinaryOperation({ $0 * $1 }), // closure
     "÷" : Operation.BinaryOperation({ $0 / $1 }),
     "+" : Operation.BinaryOperation({ $0 + $1 }),
     "-" : Operation.BinaryOperation({ $0 - $1 }),
+    "rand" : Operation.NullaryOperation(drand48, "rand()"),
     "=" : Operation.Equals
     ]
     
@@ -43,6 +46,7 @@ class CalculatorBrain {
         case Constant(Double)
         case UnaryOperation((Double) -> Double)
         case BinaryOperation((Double, Double) -> Double)
+        case NullaryOperation(() -> Double, String)
         case Equals
     }
     
@@ -57,6 +61,9 @@ class CalculatorBrain {
             case .BinaryOperation(let function):
                 executePendingBinaryOperation()
                 pending = pendingBinaryOperationInfo(binaryFunction: function, firstOprand: accumulator)
+            case .NullaryOperation(let function, _):
+                accumulator = function()
+                //descriptionAccumulator = descriptionValue
             case .Equals:
                 executePendingBinaryOperation()
             }
@@ -110,4 +117,5 @@ class CalculatorBrain {
             return accumulator
         }
     }
+    
 }
