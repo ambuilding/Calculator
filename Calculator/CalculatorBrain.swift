@@ -17,8 +17,17 @@ class CalculatorBrain {
     private var accumulator = 0.0
     var internalPromgram = [AnyObject]()
     
+//    var decimalDigits: Int
+//    
+//    init(decimalDigits:Int) {
+//        self.decimalDigits = decimalDigits
+//    }
+    
     func setOperand(operand: Double) {
         accumulator = operand
+//        let formatter = NSNumberFormatter()
+//        formatter.numberStyle = .DecimalStyle
+//        formatter.maximumFractionDigits = decimalDigits
         internalPromgram.append(operand)
     }
     
@@ -59,8 +68,11 @@ class CalculatorBrain {
             case .UnaryOperation(let function):
                 accumulator = function(accumulator)
             case .BinaryOperation(let function):
+                
                 executePendingBinaryOperation()
+                
                 pending = pendingBinaryOperationInfo(binaryFunction: function, firstOprand: accumulator)
+                
             case .NullaryOperation(let function, _):
                 accumulator = function()
                 //descriptionAccumulator = descriptionValue
